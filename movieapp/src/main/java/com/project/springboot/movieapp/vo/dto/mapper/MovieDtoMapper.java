@@ -1,8 +1,12 @@
-package com.project.springboot.movieapp.entity;
+package com.project.springboot.movieapp.vo.dto.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import com.project.springboot.movieapp.vo.dto.MovieDto;
+import com.project.springboot.movieapp.vo.entity.Movie;
+import com.project.springboot.movieapp.vo.entity.UserMovieRatings;
 
 
 public class MovieDtoMapper {

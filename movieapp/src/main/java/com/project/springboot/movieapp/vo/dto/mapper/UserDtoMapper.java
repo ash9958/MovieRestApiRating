@@ -1,9 +1,10 @@
-package com.project.springboot.movieapp.entity;
+package com.project.springboot.movieapp.vo.dto.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.project.springboot.movieapp.entity.User;
+import com.project.springboot.movieapp.vo.dto.UserDto;
+import com.project.springboot.movieapp.vo.entity.User;
 
 public class UserDtoMapper {
 	public UserDto getUserToDto(User user) {

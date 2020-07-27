@@ -19,13 +19,13 @@ import org.springframework.data.domain.Pageable;
 
 import com.project.springboot.movieapp.dao.MovieDAO;
 import com.project.springboot.movieapp.dao.UserMovieRatingsDAO;
-import com.project.springboot.movieapp.entity.Movie;
-import com.project.springboot.movieapp.entity.MovieDto;
-import com.project.springboot.movieapp.entity.MovieDtoMapper;
-import com.project.springboot.movieapp.entity.MovieSummary;
-import com.project.springboot.movieapp.entity.User;
-import com.project.springboot.movieapp.entity.UserMovieRatings;
 import com.project.springboot.movieapp.exceptions.MovieNotFoundException;
+import com.project.springboot.movieapp.vo.dto.MovieDto;
+import com.project.springboot.movieapp.vo.dto.mapper.MovieDtoMapper;
+import com.project.springboot.movieapp.vo.entity.Movie;
+import com.project.springboot.movieapp.vo.entity.MovieSummary;
+import com.project.springboot.movieapp.vo.entity.User;
+import com.project.springboot.movieapp.vo.entity.UserMovieRatings;
 
 @RestController
 @RequestMapping("/user")

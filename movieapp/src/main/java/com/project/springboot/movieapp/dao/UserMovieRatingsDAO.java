@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.project.springboot.movieapp.entity.UserMovieRatings;
-import com.project.springboot.movieapp.entity.UserMovieRatingspk;
+import com.project.springboot.movieapp.vo.entity.UserMovieRatings;
+import com.project.springboot.movieapp.vo.entity.UserMovieRatingspk;
 
 public interface UserMovieRatingsDAO extends JpaRepository<UserMovieRatings, UserMovieRatingspk> {
 	UserMovieRatings findByUserIdAndMovieId(Integer userId, Integer id);

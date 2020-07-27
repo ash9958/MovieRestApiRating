@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.project.springboot.movieapp.dao.UserDAO;
-import com.project.springboot.movieapp.entity.User;
+import com.project.springboot.movieapp.vo.entity.User;
 
 
 
