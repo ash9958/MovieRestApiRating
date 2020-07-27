@@ -22,7 +22,4 @@ public class MovieSummary {
 	public void setResults(List<MovieDto> results) {
 		this.results = results;
 	}
-
-	
-
 }

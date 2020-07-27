@@ -24,30 +24,4 @@ public class Movie {
 	private Double averageRating;
 	@Lob
 	private String overview;
-	public Integer getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
-	}
-	public String getTitle() {
-		return title;
-	}
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	public Double getAverageRating() {
-		return averageRating;
-	}
-	public void setAverageRating(Double averageRating) {
-		this.averageRating = averageRating;
-	}
-	public String getOverview() {
-		return overview;
-	}
-	public void setOverview(String overview) {
-		this.overview = overview;
-	}
-
-
 }

@@ -7,32 +7,32 @@ import com.project.springboot.movieapp.vo.dto.UserDto;
 import com.project.springboot.movieapp.vo.entity.User;
 
 public class UserDtoMapper {
-	public UserDto getUserToDto(User user) {
+	public UserDto getDtoFromUser(User user) {
 		UserDto userDto = new UserDto();
 		userDto.setId(user.getId());
 		userDto.setName(user.getName());
 		return userDto;
 	}
 
-	public User getDtoToUser(UserDto userDto) {
+	public User getUserFromDto(UserDto userDto) {
 		User user = new User();
 		user.setId(userDto.getId());
 		user.setName(userDto.getName());
 		return user;
 	}
 
-	public List<UserDto> getUserToDtoList(List<User> users) {
+	public List<UserDto> getDtoListFromUserLists(List<User> users) {
 		List<UserDto> userDtos = new ArrayList<UserDto>();
 		users.forEach(user ->{
-			userDtos.add(getUserToDto(user));
+			userDtos.add(getDtoFromUser(user));
 		});
 		return userDtos;
 	}
 
-	public List<User> getDtoToUserList(List<UserDto> userDtos) {
+	public List<User> getUserListFromDtoList(List<UserDto> userDtos) {
 		List<User> users = new ArrayList<User>();
 		userDtos.forEach(userDto ->{
-			users.add(getDtoToUser(userDto));
+			users.add(getUserFromDto(userDto));
 		});
 		return users;
 	}
