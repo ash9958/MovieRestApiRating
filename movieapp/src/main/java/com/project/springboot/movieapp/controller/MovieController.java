@@ -41,9 +41,9 @@ public class MovieController {
 	private RestTemplate restTemplate;
 	
 	MovieDtoMapper movieDtoMapper = new MovieDtoMapper();
-	
+	  
 	@Autowired
-	UserMovieRatingsDAO userMovieRatingsDao;
+	UserMovieRatingsDAO userMovieRatingsDao; 
 	
 	@GetMapping(value = { "/{userId}/movie/{movieName}" })
 	public List<MovieDto> getMovieSearch(@PathVariable Integer userId, @PathVariable String movieName) {
