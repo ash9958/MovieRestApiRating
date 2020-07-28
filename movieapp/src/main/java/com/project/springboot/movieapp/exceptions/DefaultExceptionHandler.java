@@ -22,6 +22,14 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 		return new ResponseEntity<Object>(exceptionEntity, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	@ExceptionHandler(MovieNotFoundException.class)
+	public final ResponseEntity<Object> movieNotFoundException(MovieNotFoundException exception, WebRequest req) {
+		ExceptionEntity exceptionEntity = new ExceptionEntity(exception.getMessage(),
+				req.getDescription(false), new Date());
+		return new ResponseEntity<Object>(exceptionEntity, HttpStatus.NOT_FOUND);
+	}
+
+	
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest req) {
