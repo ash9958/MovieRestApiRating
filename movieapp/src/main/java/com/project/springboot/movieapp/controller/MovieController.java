@@ -1,5 +1,6 @@
 package com.project.springboot.movieapp.controller;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -19,10 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import com.project.springboot.movieapp.dao.MovieDAO;
-import com.project.springboot.movieapp.dao.UserDAO;
-import com.project.springboot.movieapp.dao.UserMovieRatingsDAO;
+
 import com.project.springboot.movieapp.exceptions.MovieNotFoundException;
+import com.project.springboot.movieapp.service.MovieService;
 import com.project.springboot.movieapp.vo.dto.MovieDto;
 import com.project.springboot.movieapp.vo.dto.mapper.MovieDtoMapper;
 import com.project.springboot.movieapp.vo.entity.Movie;
@@ -34,10 +34,7 @@ import com.project.springboot.movieapp.vo.entity.UserMovieRatings;
 public class MovieController {
 
 	@Autowired
-	private MovieDAO movieDao;
-
-	@Autowired
-	private UserDAO userDao;
+	private MovieService movieService;
 
 	@Value("${api.key}")
 	private String apiKey;
@@ -47,25 +44,21 @@ public class MovieController {
 
 	MovieDtoMapper movieDtoMapper = new MovieDtoMapper();
 
-	@Autowired
-	UserMovieRatingsDAO userMovieRatingsDao;
-
-	
 
 	@GetMapping("/movies/{movieName}")
-	public List<MovieDto> getMovieSearch(@RequestParam Integer userId, @PathVariable String movieName) {
+	public List<MovieDto> getMovieSearch(Principal principal, @PathVariable String movieName) {
 		List<MovieDto> moviesDtos = new ArrayList<MovieDto>();
-		if(userId!=null) {
-		Optional<User> user = userDao.findById(userId);
+
+		Optional<User> user = movieService.findByName(principal.getName());
 		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-		
+
 		MovieSummary resp = restTemplate.getForObject(
 				"https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&query=" + movieName,
 				MovieSummary.class);
 		if (!resp.getResults().isEmpty()) {
 			moviesDtos = resp.getResults();
 			moviesDtos.forEach(movieDto -> {
-				UserMovieRatings userMovieRating = userMovieRatingsDao.findByUserIdAndMovieId(user.get().getId(),
+				UserMovieRatings userMovieRating = movieService.findByUserIdAndMovieId(user.get().getId(),
 						movieDto.getId());
 				if (Objects.nonNull(userMovieRating)) {
 					movieDto.setMyRating(userMovieRating.getRating());
@@ -74,76 +67,68 @@ public class MovieController {
 		} else {
 			throw new MovieNotFoundException("Movie Not Found - " + movieName);
 		}
-		}
-		else
-		{
-			throw new UsernameNotFoundException("Please enter the user Id");
-		}
+
 		return moviesDtos;
 	}
 
 	@PostMapping("/movies")
-	public String saveUserRatedMovies(@RequestBody MovieDto moviedto, @RequestParam Integer userId) {
-		if(userId!=null)
-		{
-			Optional<User> user = userDao.findById(userId);
-			user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-			if(Objects.nonNull(moviedto))
-			{
-				User userData = new User(userId, "", "");
-				Movie movieData = movieDtoMapper.getMovieFromDto(moviedto);
-				movieDao.save(movieData);
-				UserMovieRatings userMovieRating = new UserMovieRatings(userId, moviedto.getId(), userData, movieData,
+	public String saveUserRatedMovies(@RequestBody MovieDto moviedto, Principal principal) {
+
+		Optional<User> user = movieService.findByName(principal.getName());
+		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+		Integer userId = user.get().getId();
+
+		if (Objects.nonNull(moviedto.getOverview()) && Objects.nonNull(moviedto.getTitle()) 
+				&& Objects.nonNull(moviedto.getId()) && Objects.nonNull(moviedto.getMyRating())) {
+			if(!moviedto.getTitle().equals("") && !moviedto.getOverview().equals("")
+					&& !moviedto.getMyRating().equals("") && !moviedto.getId().equals("")) {
+			User userData = new User(userId, "", "");
+			Movie movieData = movieDtoMapper.getMovieFromDto(moviedto);
+			movieService.saveMovie(movieData);
+			UserMovieRatings userMovieRating = new UserMovieRatings(userId, moviedto.getId(), userData, movieData,
 					moviedto.getMyRating(), new Date());
-				userMovieRatingsDao.save(userMovieRating);
-			
+			movieService.saveRating(userMovieRating);
 			}
 			else
 			{
-				throw new MovieNotFoundException("Movie not present");
+				throw new MovieNotFoundException("Please enter the valid movie details");
 			}
+		} else {
+			throw new MovieNotFoundException("Movie not present");
 		}
-		
-		else
-		{
-			throw new UsernameNotFoundException("Please enter the user Id");
-		}
+
 		return "Movie saved successfully";
 	}
-	
+
 	@GetMapping("/movies")
-	public List<MovieDto> getUserMovies(@RequestParam Integer userId, 
-			@RequestParam(defaultValue = "all") String sortorder,
+	public List<MovieDto> getUserMovies(Principal principal, @RequestParam(defaultValue = "all") String sortorder,
 			@RequestParam(value = "page", defaultValue = "0") Integer page,
-			@RequestParam(value = "size", defaultValue = "10") int size)
-	{
-		
-		Optional<User> user = userDao.findById(userId);
-		user.orElseThrow(() -> new UsernameNotFoundException("User Not found"));
+			@RequestParam(value = "size", defaultValue = "10") Integer size) {
+
+		Optional<User> user = movieService.findByName(principal.getName());
+		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+
 		List<MovieDto> movieDtos = new ArrayList<MovieDto>();
 		Pageable pageable = PageRequest.of(page, size);
-		if(sortorder.equalsIgnoreCase("time") || sortorder.equalsIgnoreCase("latest"))
-		{
-			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao
+		if (sortorder.equalsIgnoreCase("time") || sortorder.equalsIgnoreCase("latest")) {
+			List<UserMovieRatings> userMovieRatings = movieService
 					.findByUserIdOrderByTimestampDesc(user.get().getId(), pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
 			return movieDtos;
-		}
-		else if(sortorder.equalsIgnoreCase("ratings") || sortorder.equalsIgnoreCase("fav"))
-		{
-			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserIdOrderByRatingDesc(user.get().getId(),
-					pageable);
+		} else if (sortorder.equalsIgnoreCase("ratings") || sortorder.equalsIgnoreCase("fav")) {
+			List<UserMovieRatings> userMovieRatings = movieService
+					.findByUserIdOrderByRatingDesc(user.get().getId(), pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
 			return movieDtos;
-		}
-		else
-		{
-			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserId(user.get().getId(), pageable);
+		} else if (sortorder.equalsIgnoreCase("all")) {
+			List<UserMovieRatings> userMovieRatings = movieService.findByUserId(user.get().getId(), pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
 			return movieDtos;
+		} else {
+			throw new MovieNotFoundException("Invalid sorting order");
 		}
 	}
 }
