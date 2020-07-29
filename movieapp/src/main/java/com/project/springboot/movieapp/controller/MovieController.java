@@ -83,7 +83,7 @@ public class MovieController {
 	}
 
 	@PostMapping("/movies")
-	public MovieDto saveUserRatedMovies(@RequestBody MovieDto moviedto, @RequestParam Integer userId) {
+	public String saveUserRatedMovies(@RequestBody MovieDto moviedto, @RequestParam Integer userId) {
 		if(userId!=null)
 		{
 			Optional<User> user = userDao.findById(userId);
@@ -108,20 +108,21 @@ public class MovieController {
 		{
 			throw new UsernameNotFoundException("Please enter the user Id");
 		}
-		return moviedto;
+		return "Movie saved successfully";
 	}
 	
 	@GetMapping("/movies")
 	public List<MovieDto> getUserMovies(@RequestParam Integer userId, 
-			@RequestParam(value = "sortorder", defaultValue = "all") String sortorder,
+			@RequestParam(defaultValue = "all") String sortorder,
 			@RequestParam(value = "page", defaultValue = "0") Integer page,
 			@RequestParam(value = "size", defaultValue = "10") int size)
 	{
+		
 		Optional<User> user = userDao.findById(userId);
 		user.orElseThrow(() -> new UsernameNotFoundException("User Not found"));
 		List<MovieDto> movieDtos = new ArrayList<MovieDto>();
 		Pageable pageable = PageRequest.of(page, size);
-		if(sortorder == "time" || sortorder == "latest")
+		if(sortorder.equalsIgnoreCase("time") || sortorder.equalsIgnoreCase("latest"))
 		{
 			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao
 					.findByUserIdOrderByTimestampDesc(user.get().getId(), pageable);
@@ -129,7 +130,7 @@ public class MovieController {
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
 			return movieDtos;
 		}
-		else if(sortorder == "ratings" || sortorder == "fav")
+		else if(sortorder.equalsIgnoreCase("ratings") || sortorder.equalsIgnoreCase("fav"))
 		{
 			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserIdOrderByRatingDesc(user.get().getId(),
 					pageable);
