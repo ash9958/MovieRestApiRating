@@ -80,8 +80,7 @@ public class MovieController {
 
 		if (Objects.nonNull(moviedto.getOverview()) && Objects.nonNull(moviedto.getTitle()) 
 				&& Objects.nonNull(moviedto.getId()) && Objects.nonNull(moviedto.getMyRating())) {
-			if(!moviedto.getTitle().equals("") && !moviedto.getOverview().equals("")
-					&& !moviedto.getMyRating().equals("") && !moviedto.getId().equals("")) {
+			if(!moviedto.getTitle().equals("") && !moviedto.getOverview().equals("")) {
 			User userData = new User(userId, "", "");
 			Movie movieData = movieDtoMapper.getMovieFromDto(moviedto);
 			movieService.saveMovie(movieData);
@@ -115,20 +114,20 @@ public class MovieController {
 					.findByUserIdOrderByTimestampDesc(user.get().getId(), pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
-			return movieDtos;
 		} else if (sortorder.equalsIgnoreCase("ratings") || sortorder.equalsIgnoreCase("fav")) {
 			List<UserMovieRatings> userMovieRatings = movieService
 					.findByUserIdOrderByRatingDesc(user.get().getId(), pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
-			return movieDtos;
+		
 		} else if (sortorder.equalsIgnoreCase("all")) {
 			List<UserMovieRatings> userMovieRatings = movieService.findByUserId(user.get().getId(), pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
-			return movieDtos;
+	
 		} else {
 			throw new MovieNotFoundException("Invalid sorting order");
 		}
+		return movieDtos;
 	}
 }
