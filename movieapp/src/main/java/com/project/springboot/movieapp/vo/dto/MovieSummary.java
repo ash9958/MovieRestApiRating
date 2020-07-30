@@ -1,8 +1,6 @@
-package com.project.springboot.movieapp.vo.entity;
+package com.project.springboot.movieapp.vo.dto;
 
 import java.util.List;
-
-import com.project.springboot.movieapp.vo.dto.MovieDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

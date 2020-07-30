@@ -24,13 +24,13 @@ import com.project.springboot.movieapp.dao.MovieDAO;
 import com.project.springboot.movieapp.dao.UserDAO;
 import com.project.springboot.movieapp.dao.UserMovieRatingsDAO;
 import com.project.springboot.movieapp.exceptions.MovieNotFoundException;
-import com.project.springboot.movieapp.service.MovieService;
 import com.project.springboot.movieapp.vo.dto.MovieDto;
+import com.project.springboot.movieapp.vo.dto.MovieSummary;
 import com.project.springboot.movieapp.vo.dto.mapper.MovieDtoMapper;
 import com.project.springboot.movieapp.vo.entity.Movie;
-import com.project.springboot.movieapp.vo.entity.MovieSummary;
 import com.project.springboot.movieapp.vo.entity.User;
 import com.project.springboot.movieapp.vo.entity.UserMovieRatings;
+import com.project.springboot.movieapp.vo.entity.UserMovieRatingspk;
 
 @RestController
 public class MovieController {
@@ -68,7 +68,7 @@ public class MovieController {
 		if (!resp.getResults().isEmpty()) {
 			moviesDtos = resp.getResults();
 			moviesDtos.forEach(movieDto -> {
-				UserMovieRatings userMovieRating = userMovieRatingsDao.findByUserIdAndMovieId(user.get().getId(), movieDto.getId());
+				UserMovieRatings userMovieRating = userMovieRatingsDao.findByUserMovieRatingspk_User_IdAndUserMovieRatingspk_Movie_Id(user.get().getId(), movieDto.getId());
 						//movieService.findByUserIdAndMovieId(user.get().getId(), movieDto.getId());
 				if (Objects.nonNull(userMovieRating)) {
 					movieDto.setMyRating(userMovieRating.getRating());
@@ -93,8 +93,8 @@ public class MovieController {
 
 				if (movie.isPresent()) {
 					User userData = new User(userId, null, null);
-					UserMovieRatings userMovieRating = new UserMovieRatings(userId, movie.get().getId(), userData,
-							movie.get(), moviedto.getMyRating(), new Date());
+					UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movie.get());
+					UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk, moviedto.getMyRating(), new Date());
 					userMovieRatingsDao.save(userMovieRating);
 				} else {
 					MovieDto movieDtoResult = restTemplate.getForObject(
@@ -104,8 +104,9 @@ public class MovieController {
 						User userData = new User(userId, "", "");
 						Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
 						movieData = movieDao.save(movieData);
-						UserMovieRatings userMovieRating = new UserMovieRatings(userId, movieData.getId(), userData,
-								movieData, moviedto.getMyRating(), new Date());
+						UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
+						
+						UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk, moviedto.getMyRating(), new Date());
 						userMovieRatingsDao.save(userMovieRating);
 					} else {
 						throw new MovieNotFoundException("Movie Not Found MovieId: " + moviedto.getId());
@@ -133,18 +134,18 @@ public class MovieController {
 		Pageable pageable = PageRequest.of(page, size);
 		
 		if (sortorder.equalsIgnoreCase("time") || sortorder.equalsIgnoreCase("latest")) {
-			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserIdOrderByTimestampDesc(user.get().getId(), pageable);
+			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserMovieRatingspk_User_IdOrderByTimestampDesc(user.get().getId(), pageable);
 					//movieService.findByUserIdOrderByTimestampDesc(user.get().getId(),pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
 		} else if (sortorder.equalsIgnoreCase("ratings") || sortorder.equalsIgnoreCase("fav")) {
-			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserIdOrderByRatingDesc(user.get().getId(), pageable);
+			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserMovieRatingspk_User_IdOrderByRatingDesc(user.get().getId(), pageable);
 					//movieService.findByUserIdOrderByRatingDesc(user.get().getId(),pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
 
 		} else if (sortorder.equalsIgnoreCase("all")) {
-			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserId(user.get().getId(), pageable);
+			List<UserMovieRatings> userMovieRatings = userMovieRatingsDao.findByUserMovieRatingspk_User_Id(user.get().getId(), pageable);
 					//movieService.findByUserId(user.get().getId(), pageable);
 
 			movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);

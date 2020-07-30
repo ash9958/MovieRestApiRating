@@ -61,10 +61,10 @@ public class MovieDtoMapper {
 	public MovieDto getMovieDtoFromUserMovieRating(UserMovieRatings userMovieRating) {
 		MovieDto movieDto = new MovieDto();
 		if (Objects.nonNull(userMovieRating)) {
-			movieDto.setId(userMovieRating.getMovie().getId());
-			movieDto.setOverview(userMovieRating.getMovie().getOverview());
-			movieDto.setTitle(userMovieRating.getMovie().getTitle());
-			movieDto.setVote_average(userMovieRating.getMovie().getAverageRating());
+			movieDto.setId(userMovieRating.getUserMovieRatingspk().getMovie().getId());
+			movieDto.setOverview(userMovieRating.getUserMovieRatingspk().getMovie().getOverview());
+			movieDto.setTitle(userMovieRating.getUserMovieRatingspk().getMovie().getTitle());
+			movieDto.setVote_average(userMovieRating.getUserMovieRatingspk().getMovie().getAverageRating());
 			movieDto.setMyRating(userMovieRating.getRating());
 			return movieDto;
 		}
