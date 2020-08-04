@@ -36,15 +36,18 @@ public class MovieController {
 	MovieDtoMapper movieDtoMapper = new MovieDtoMapper();
 
 	@GetMapping("/searchmovies")
-	public List<MovieDto> getMovieSearch(Principal principal, @RequestParam String movieName) {
+	public List<MovieDto> getMovieSearch(Principal principal, @RequestParam Optional<String> movieName) {
 		List<MovieDto> moviesDtos = new ArrayList<MovieDto>();
 
 		Optional<User> user = userDao.findByName(principal.getName());
 		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-		if (movieName.equals("")) {
+		
+		movieName.orElseThrow(()-> new MovieNotFoundException("The movie param not passed."));
+		
+		if (movieName.get().equals("")) {
 			throw new MovieNotFoundException("The movie Name is empty!");
 		} else {
-			moviesDtos = movieService.getMovie(movieName, user.get().getId());
+			moviesDtos = movieService.getMovie(movieName.get(), user.get().getId());
 		}
 
 		return moviesDtos;
@@ -55,12 +58,6 @@ public class MovieController {
 
 		Optional<User> user = userDao.findByName(principal.getName());
 		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-//		Integer userId = user.get().getId();
-//		if (Objects.nonNull(moviedto)) {
-//			movieService.saveMovie(moviedto, userId);
-//		} else {
-//			throw new MovieNotFoundException("The movie body is empty!");
-//		}
 		moviedto.orElseThrow(() -> new MovieNotFoundException("The movie body is empty!"));
 		movieService.saveMovie(moviedto.get(), user.get().getId());
 
