@@ -103,6 +103,9 @@ public class MovieServiceImpl implements MovieService {
 				pageable);
 
 		movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
+		if(Objects.isNull(movieDtos)) {
+			throw new MovieNotFoundException("Movie data not found. This page may not have data.");
+		}
 		return movieDtos;
 	}
 
