@@ -3,7 +3,6 @@ package com.project.springboot.movieapp.controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,23 +41,28 @@ public class MovieController {
 
 		Optional<User> user = userDao.findByName(principal.getName());
 		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-
-		moviesDtos = movieService.getmovie(movieName, user.get().getId());
+		if (movieName.equals("")) {
+			throw new MovieNotFoundException("The movie Name is empty!");
+		} else {
+			moviesDtos = movieService.getmovie(movieName, user.get().getId());
+		}
 
 		return moviesDtos;
 	}
 
 	@PostMapping("/movies")
-	public String saveUserRatedMovies(@RequestBody MovieDto moviedto, Principal principal) {
+	public String saveUserRatedMovies(@RequestBody Optional<MovieDto> moviedto, Principal principal) {
 
 		Optional<User> user = userDao.findByName(principal.getName());
 		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-		Integer userId = user.get().getId();
-		if (Objects.nonNull(moviedto)) {
-			movieService.saveMovie(moviedto, userId);
-		} else {
-			throw new MovieNotFoundException("The movie body is empty!");
-		}
+//		Integer userId = user.get().getId();
+//		if (Objects.nonNull(moviedto)) {
+//			movieService.saveMovie(moviedto, userId);
+//		} else {
+//			throw new MovieNotFoundException("The movie body is empty!");
+//		}
+		moviedto.orElseThrow(() -> new MovieNotFoundException("The movie body is empty!"));
+		movieService.saveMovie(moviedto.get(), user.get().getId());
 
 		return "Movie saved successfully";
 	}

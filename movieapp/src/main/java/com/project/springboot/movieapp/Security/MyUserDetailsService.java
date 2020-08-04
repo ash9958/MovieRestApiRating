@@ -1,5 +1,6 @@
 package com.project.springboot.movieapp.Security;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.project.springboot.movieapp.dao.UserDAO;
-import com.project.springboot.movieapp.vo.entity.MyUserDetails;
 import com.project.springboot.movieapp.vo.entity.User;
-
-
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
@@ -25,11 +23,8 @@ public class MyUserDetailsService implements UserDetailsService {
 
 		Optional<User> user = userDao.findByName(name);
 		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-		return new MyUserDetails(user.get());
-
+		//return new MyUserDetails(user.get());
+		return new org.springframework.security.core.userdetails.User(user.get().getName(), user.get().getPassword(), new ArrayList<>());
 	}
-
-
-	
 
 }
