@@ -9,7 +9,7 @@ import com.project.springboot.movieapp.vo.dto.MovieDto;
 
 public interface MovieService {
 
-	public List<MovieDto> getmovie(String movieName, Integer id);
+	public List<MovieDto> getMovie(String movieName, Integer id);
 
 	public void saveMovie(MovieDto moviedto, Integer userId);
 

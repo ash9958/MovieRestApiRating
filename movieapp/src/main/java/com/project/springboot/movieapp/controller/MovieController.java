@@ -44,7 +44,7 @@ public class MovieController {
 		if (movieName.equals("")) {
 			throw new MovieNotFoundException("The movie Name is empty!");
 		} else {
-			moviesDtos = movieService.getmovie(movieName, user.get().getId());
+			moviesDtos = movieService.getMovie(movieName, user.get().getId());
 		}
 
 		return moviesDtos;
