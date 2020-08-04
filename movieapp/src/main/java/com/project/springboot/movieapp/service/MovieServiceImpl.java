@@ -76,7 +76,8 @@ public class MovieServiceImpl implements MovieService {
 					UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk, moviedto.getMyRating(),
 							new Date());
 					userMovieRatingsDao.save(userMovieRating);
-				} else {
+				} 
+				else {
 					User userData = new User(userId, "", "");
 					Movie movieData = movieDtoMapper.getMovieFromDto(moviedto);
 					movieData = movieDao.save(movieData);
@@ -87,6 +88,21 @@ public class MovieServiceImpl implements MovieService {
 					userMovieRatingsDao.save(userMovieRating);
 
 				}
+//				else {
+//					MovieDto movieDtoResult = restTemplate.getForObject(
+//							"https://api.themoviedb.org/3/movie/" + moviedto.getId() + "?api_key=" + apiKey,
+//							MovieDto.class);
+//					if (Objects.nonNull(movieDtoResult)) {
+//						User userData = new User(userId, "", "");
+//						Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
+//						movieData = movieDao.save(movieData);
+//						UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
+//						UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk ,moviedto.getMyRating(), new Date());
+//						userMovieRatingsDao.save(userMovieRating);
+//					} else {
+//						throw new MovieNotFoundException("Movie Not Found MovieId: " + moviedto.getId());
+//					}
+//				}
 			} else {
 				throw new RuntimeException("invalid rating: " + moviedto.getMyRating());
 			}
