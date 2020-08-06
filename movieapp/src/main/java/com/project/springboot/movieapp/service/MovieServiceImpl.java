@@ -14,9 +14,9 @@ import org.springframework.web.client.RestTemplate;
 
 import com.project.springboot.movieapp.dao.MovieDAO;
 import com.project.springboot.movieapp.dao.UserMovieRatingsDAO;
+import com.project.springboot.movieapp.exceptions.DataNotFoundException;
 import com.project.springboot.movieapp.exceptions.InvalidRequestException;
 import com.project.springboot.movieapp.exceptions.MovieNotFoundException;
-import com.project.springboot.movieapp.exceptions.NoRelatedDataException;
 import com.project.springboot.movieapp.vo.dto.MovieDto;
 import com.project.springboot.movieapp.vo.dto.MovieSummary;
 import com.project.springboot.movieapp.vo.dto.mapper.MovieDtoMapper;
@@ -81,29 +81,46 @@ public class MovieServiceImpl implements MovieService {
 					userMovieRatingsDao.save(userMovieRating);
 
 				} else {
-					MovieDto movieDtoResult = restTemplate.getForObject(
-							"https://api.themoviedb.org/3/movie/" + moviedto.getId() + "?api_key=" + apiKey,
-							MovieDto.class);
-					if (Objects.nonNull(movieDtoResult)) {
-						User userData = new User(userId, "", "");
-						Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
-						movieData = movieDao.save(movieData);
-						UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
-						UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk,
-								moviedto.getMyRating(), new Date());
-						userMovieRatingsDao.save(userMovieRating);
-					} else {
-						throw new NoRelatedDataException("Movie not found for movieId: " + movieId);
-						// *********Exception is not Getting the message***************//
-						// Please Check to handle??
+					try {
+						MovieDto movieDtoResult = restTemplate.getForObject(
+								"https://api.themoviedb.org/3/movie/" + moviedto.getId() + "?api_key=" + apiKey,
+								MovieDto.class);
+						if (Objects.nonNull(movieDtoResult)) {
+							User userData = new User(userId, "", "");
+							Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
+							movieData = movieDao.save(movieData);
+							UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
+							UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk,
+									moviedto.getMyRating(), new Date());
+							userMovieRatingsDao.save(userMovieRating);
+
+						}
+					} catch (Exception e) {
+						throw new DataNotFoundException("Movie not found for movieId: " + movieId);
 					}
+//					MovieDto movieDtoResult = restTemplate.getForObject(
+//							"https://api.themoviedb.org/3/movie/" + moviedto.getId() + "?api_key=" + apiKey,
+//							MovieDto.class);
+//					if (Objects.nonNull(movieDtoResult)) {
+//						User userData = new User(userId, "", "");
+//						Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
+//						movieData = movieDao.save(movieData);
+//						UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
+//						UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk,
+//								moviedto.getMyRating(), new Date());
+//						userMovieRatingsDao.save(userMovieRating);
+//					 else {
+//						throw new DataNotException("Movie not found for movieId: " + movieId);
+//						// *********Exception is not Getting the message***************//
+//						// Please Check to handle??
+//					}
 				}
 
 			} else {
 				throw new InvalidRequestException("Invalid Rating: " + myRating);
 			}
 		} else {
-			throw new NoRelatedDataException("MovieId or Rating not Found");
+			throw new DataNotFoundException("MovieId or Rating not Found");
 		}
 	}
 

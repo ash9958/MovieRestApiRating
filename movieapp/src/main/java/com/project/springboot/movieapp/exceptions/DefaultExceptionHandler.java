@@ -29,8 +29,8 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 		return new ResponseEntity<Object>(exceptionEntity, HttpStatus.NO_CONTENT);
 	}
 
-	@ExceptionHandler(NoRelatedDataException.class)
-	public final ResponseEntity<Object> noRelatedDataException(NoRelatedDataException exception, WebRequest req) {
+	@ExceptionHandler(DataNotFoundException.class)
+	public final ResponseEntity<Object> dataNotFoundException(DataNotFoundException exception, WebRequest req) {
 		ExceptionEntity exceptionEntity = new ExceptionEntity(exception.getMessage(), req.getDescription(false),
 				new Date());
 		return new ResponseEntity<Object>(exceptionEntity, HttpStatus.NOT_FOUND);

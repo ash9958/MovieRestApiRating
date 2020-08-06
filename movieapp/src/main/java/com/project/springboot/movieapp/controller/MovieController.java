@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.springboot.movieapp.dao.UserDAO;
 import com.project.springboot.movieapp.exceptions.InvalidRequestException;
-import com.project.springboot.movieapp.exceptions.NoRelatedDataException;
+import com.project.springboot.movieapp.exceptions.DataNotFoundException;
 import com.project.springboot.movieapp.service.MovieService;
 import com.project.springboot.movieapp.vo.dto.MovieDto;
 import com.project.springboot.movieapp.vo.dto.mapper.MovieDtoMapper;
@@ -43,10 +43,10 @@ public class MovieController {
 		Optional<User> user = userDao.findByName(principal.getName());
 		user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-		movieName.orElseThrow(() -> new InvalidRequestException("Parameter required"));
+		movieName.orElseThrow(() -> new InvalidRequestException("Parameter 'movieName' required"));
 
 		if (movieName.get().equals("")) {
-			throw new NoRelatedDataException("Movie name not found");
+			throw new DataNotFoundException("Movie name not found");
 		} else {
 			moviesDtos = movieService.getMovie(movieName.get(), user.get().getId());
 		}
