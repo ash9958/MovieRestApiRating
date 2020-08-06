@@ -1,4 +1,4 @@
-package com.project.springboot.movieapp.exceptions;
+package com.project.springboot.movieapp.vo.entity;
 
 import java.util.Date;
 
@@ -16,4 +16,6 @@ public class ExceptionEntity {
 	private String message;
 	private String details;
 	private Date timestamp;
+	
+	
 }

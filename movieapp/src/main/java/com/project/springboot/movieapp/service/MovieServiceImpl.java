@@ -13,9 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.project.springboot.movieapp.dao.MovieDAO;
-
 import com.project.springboot.movieapp.dao.UserMovieRatingsDAO;
+import com.project.springboot.movieapp.exceptions.InvalidRequestException;
 import com.project.springboot.movieapp.exceptions.MovieNotFoundException;
+import com.project.springboot.movieapp.exceptions.NoRelatedDataException;
 import com.project.springboot.movieapp.vo.dto.MovieDto;
 import com.project.springboot.movieapp.vo.dto.MovieSummary;
 import com.project.springboot.movieapp.vo.dto.mapper.MovieDtoMapper;
@@ -52,23 +53,25 @@ public class MovieServiceImpl implements MovieService {
 			moviesDtos.forEach(movieDto -> {
 				UserMovieRatings userMovieRating = userMovieRatingsDao
 						.findByUserMovieRatingspk_User_IdAndUserMovieRatingspk_Movie_Id(id, movieDto.getId());
-				// movieService.findByUserIdAndMovieId(user.get().getId(), movieDto.getId());
 				if (Objects.nonNull(userMovieRating)) {
 					movieDto.setMyRating(userMovieRating.getRating());
 				}
 			});
 		} else {
-			throw new MovieNotFoundException("Movie Not Found - " + movieName);
+			throw new MovieNotFoundException();
 		}
 		return moviesDtos;
 	}
 
 	@Override
 	public void saveMovie(MovieDto moviedto, Integer userId) {
-		if (!moviedto.getTitle().equals(null) && !moviedto.getOverview().equals(null) && !moviedto.getTitle().equals("")
-				&& !moviedto.getOverview().equals("")) {
-			if (moviedto.getMyRating() > 0 && moviedto.getMyRating() <= 10) {
-				Optional<Movie> movie = movieDao.findById(moviedto.getId());
+
+		Integer movieId = moviedto.getId();
+		Double myRating = moviedto.getMyRating();
+
+		if (Objects.nonNull(movieId) && Objects.nonNull(myRating)) {
+			if (myRating > 0 && myRating <= 10) {
+				Optional<Movie> movie = movieDao.findById(movieId);
 
 				if (movie.isPresent()) {
 					User userData = new User(userId, null, null);
@@ -76,38 +79,31 @@ public class MovieServiceImpl implements MovieService {
 					UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk, moviedto.getMyRating(),
 							new Date());
 					userMovieRatingsDao.save(userMovieRating);
-				} 
-				else {
-					User userData = new User(userId, "", "");
-					Movie movieData = movieDtoMapper.getMovieFromDto(moviedto);
-					movieData = movieDao.save(movieData);
-					UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
 
-					UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk, moviedto.getMyRating(),
-							new Date());
-					userMovieRatingsDao.save(userMovieRating);
-
+				} else {
+					MovieDto movieDtoResult = restTemplate.getForObject(
+							"https://api.themoviedb.org/3/movie/" + moviedto.getId() + "?api_key=" + apiKey,
+							MovieDto.class);
+					if (Objects.nonNull(movieDtoResult)) {
+						User userData = new User(userId, "", "");
+						Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
+						movieData = movieDao.save(movieData);
+						UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
+						UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk,
+								moviedto.getMyRating(), new Date());
+						userMovieRatingsDao.save(userMovieRating);
+					} else {
+						throw new NoRelatedDataException("Movie not found for movieId: " + movieId);
+						// *********Exception is not Getting the message***************//
+						// Please Check to handle??
+					}
 				}
-//				else {
-//					MovieDto movieDtoResult = restTemplate.getForObject(
-//							"https://api.themoviedb.org/3/movie/" + moviedto.getId() + "?api_key=" + apiKey,
-//							MovieDto.class);
-//					if (Objects.nonNull(movieDtoResult)) {
-//						User userData = new User(userId, "", "");
-//						Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
-//						movieData = movieDao.save(movieData);
-//						UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
-//						UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk ,moviedto.getMyRating(), new Date());
-//						userMovieRatingsDao.save(userMovieRating);
-//					} else {
-//						throw new MovieNotFoundException("Movie Not Found MovieId: " + moviedto.getId());
-//					}
-//				}
+
 			} else {
-				throw new RuntimeException("invalid rating: " + moviedto.getMyRating());
+				throw new InvalidRequestException("Invalid Rating: " + myRating);
 			}
 		} else {
-			throw new RuntimeException("Movie name or overview cannot be empty!");
+			throw new NoRelatedDataException("MovieId or Rating not Found");
 		}
 	}
 
@@ -119,8 +115,8 @@ public class MovieServiceImpl implements MovieService {
 				pageable);
 
 		movieDtos = movieDtoMapper.getMovieDtoListFromUserMovieRatingList(userMovieRatings);
-		if(Objects.isNull(movieDtos)) {
-			throw new MovieNotFoundException("Movie data not found. This page may not have data.");
+		if (Objects.isNull(movieDtos)) {
+			throw new MovieNotFoundException();
 		}
 		return movieDtos;
 	}

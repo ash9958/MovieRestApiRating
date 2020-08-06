@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.springboot.movieapp.dao.UserDAO;
-import com.project.springboot.movieapp.exceptions.MovieNotFoundException;
+import com.project.springboot.movieapp.exceptions.InvalidRequestException;
+import com.project.springboot.movieapp.exceptions.NoRelatedDataException;
 import com.project.springboot.movieapp.service.MovieService;
 import com.project.springboot.movieapp.vo.dto.MovieDto;
 import com.project.springboot.movieapp.vo.dto.mapper.MovieDtoMapper;
@@ -40,12 +41,12 @@ public class MovieController {
 		List<MovieDto> moviesDtos = new ArrayList<MovieDto>();
 
 		Optional<User> user = userDao.findByName(principal.getName());
-		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-		
-		movieName.orElseThrow(()-> new MovieNotFoundException("The movie param not passed."));
-		
+		user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+		movieName.orElseThrow(() -> new InvalidRequestException("Parameter required"));
+
 		if (movieName.get().equals("")) {
-			throw new MovieNotFoundException("The movie Name is empty!");
+			throw new NoRelatedDataException("Movie name not found");
 		} else {
 			moviesDtos = movieService.getMovie(movieName.get(), user.get().getId());
 		}
@@ -57,8 +58,8 @@ public class MovieController {
 	public String saveUserRatedMovies(@RequestBody Optional<MovieDto> moviedto, Principal principal) {
 
 		Optional<User> user = userDao.findByName(principal.getName());
-		user.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-		moviedto.orElseThrow(() -> new MovieNotFoundException("The movie body is empty!"));
+		user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+		moviedto.orElseThrow(() -> new InvalidRequestException("No data in body"));
 		movieService.saveMovie(moviedto.get(), user.get().getId());
 
 		return "Movie saved successfully";
