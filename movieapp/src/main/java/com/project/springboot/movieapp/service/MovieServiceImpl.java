@@ -68,7 +68,7 @@ public class MovieServiceImpl implements MovieService {
 
 		Integer movieId = moviedto.getId();
 		Double myRating = moviedto.getMyRating();
-
+		MovieDto movieDtoResult = new MovieDto();
 		if (Objects.nonNull(movieId) && Objects.nonNull(myRating)) {
 			if (myRating > 0 && myRating <= 10) {
 				Optional<Movie> movie = movieDao.findById(movieId);
@@ -82,38 +82,22 @@ public class MovieServiceImpl implements MovieService {
 
 				} else {
 					try {
-						MovieDto movieDtoResult = restTemplate.getForObject(
+						movieDtoResult = restTemplate.getForObject(
 								"https://api.themoviedb.org/3/movie/" + moviedto.getId() + "?api_key=" + apiKey,
 								MovieDto.class);
-						if (Objects.nonNull(movieDtoResult)) {
-							User userData = new User(userId, "", "");
-							Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
-							movieData = movieDao.save(movieData);
-							UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
-							UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk,
-									moviedto.getMyRating(), new Date());
-							userMovieRatingsDao.save(userMovieRating);
-
-						}
 					} catch (Exception e) {
 						throw new DataNotFoundException("Movie not found for movieId: " + movieId);
 					}
-//					MovieDto movieDtoResult = restTemplate.getForObject(
-//							"https://api.themoviedb.org/3/movie/" + moviedto.getId() + "?api_key=" + apiKey,
-//							MovieDto.class);
-//					if (Objects.nonNull(movieDtoResult)) {
-//						User userData = new User(userId, "", "");
-//						Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
-//						movieData = movieDao.save(movieData);
-//						UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
-//						UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk,
-//								moviedto.getMyRating(), new Date());
-//						userMovieRatingsDao.save(userMovieRating);
-//					 else {
-//						throw new DataNotException("Movie not found for movieId: " + movieId);
-//						// *********Exception is not Getting the message***************//
-//						// Please Check to handle??
-//					}
+					if (Objects.nonNull(movieDtoResult)) {
+						User userData = new User(userId, "", "");
+						Movie movieData = movieDtoMapper.getMovieFromDto(movieDtoResult);
+						movieData = movieDao.save(movieData);
+						UserMovieRatingspk userMovieRatingspk = new UserMovieRatingspk(userData, movieData);
+						UserMovieRatings userMovieRating = new UserMovieRatings(userMovieRatingspk,
+								moviedto.getMyRating(), new Date());
+						userMovieRatingsDao.save(userMovieRating);
+					}
+
 				}
 
 			} else {
