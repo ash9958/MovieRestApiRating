@@ -46,7 +46,7 @@ public class MovieController {
 		movieTitle.orElseThrow(() -> new InvalidRequestException("Parameter 'movieTitle' required"));
 
 		if (movieTitle.get().equals("")) {
-			throw new DataNotFoundException("Movie name not found");
+			throw new DataNotFoundException("Movie Title not found");
 		} else {
 			moviesDtos = movieService.getMovie(movieTitle.get(), user.get().getId());
 		}
