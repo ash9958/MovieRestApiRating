@@ -37,30 +37,29 @@ public class MovieController {
 	MovieDtoMapper movieDtoMapper = new MovieDtoMapper();
 
 	@GetMapping("/searchmovies")
-	public List<MovieDto> getMovieSearch(Principal principal, @RequestParam Optional<String> movieName) {
+	public List<MovieDto> getMovieSearch(Principal principal, @RequestParam Optional<String> movieTitle) {
 		List<MovieDto> moviesDtos = new ArrayList<MovieDto>();
 
 		Optional<User> user = userDao.findByName(principal.getName());
 		user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-		movieName.orElseThrow(() -> new InvalidRequestException("Parameter 'movieName' required"));
+		movieTitle.orElseThrow(() -> new InvalidRequestException("Parameter 'movieTitle' required"));
 
-		if (movieName.get().equals("")) {
+		if (movieTitle.get().equals("")) {
 			throw new DataNotFoundException("Movie name not found");
 		} else {
-			moviesDtos = movieService.getMovie(movieName.get(), user.get().getId());
+			moviesDtos = movieService.getMovie(movieTitle.get(), user.get().getId());
 		}
 
 		return moviesDtos;
 	}
 
 	@PostMapping("/movies")
-	public String saveUserRatedMovies(@RequestBody Optional<MovieDto> moviedto, Principal principal) {
+	public String saveUserRatedMovies(@RequestBody MovieDto moviedto, Principal principal) {
 
 		Optional<User> user = userDao.findByName(principal.getName());
 		user.orElseThrow(() -> new UsernameNotFoundException("User not found"));
-		moviedto.orElseThrow(() -> new InvalidRequestException("No data in body"));
-		movieService.saveMovie(moviedto.get(), user.get().getId());
+		movieService.saveMovie(moviedto, user.get().getId());
 
 		return "Movie saved successfully";
 	}

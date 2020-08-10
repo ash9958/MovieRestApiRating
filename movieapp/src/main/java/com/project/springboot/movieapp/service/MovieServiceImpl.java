@@ -43,10 +43,10 @@ public class MovieServiceImpl implements MovieService {
 	MovieDtoMapper movieDtoMapper = new MovieDtoMapper();
 
 	@Override
-	public List<MovieDto> getMovie(String movieName, Integer id) {
+	public List<MovieDto> getMovie(String movieTitle, Integer id) {
 		List<MovieDto> moviesDtos = new ArrayList<MovieDto>();
 		MovieSummary resp = restTemplate.getForObject(
-				"https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&query=" + movieName,
+				"https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&query=" + movieTitle,
 				MovieSummary.class);
 		if (!resp.getResults().isEmpty()) {
 			moviesDtos = resp.getResults();
